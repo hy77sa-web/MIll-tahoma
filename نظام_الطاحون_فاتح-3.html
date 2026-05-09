@@ -1,0 +1,1218 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>نظام إدارة الطاحون</title>
+<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700;800;900&display=swap" rel="stylesheet">
+<style>
+:root {
+  --gold: #C9A84C;
+  --gold-light: #E8C96D;
+  --gold-pale: #FFF8E7;
+  --brown-dark: #F5F0E8;
+  --brown-mid: #FFFFFF;
+  --brown: #F0EAD8;
+  --brown-light: #E8DCC8;
+  --cream: #FDF6E3;
+  --green: #1B4332;
+  --green-light: #52b788;
+  --red: #C0392B;
+  --red-light: #e74c3c;
+  --blue: #2980b9;
+  --text: #2C1A00;
+  --text-dim: rgba(44,26,0,0.5);
+  --border: rgba(150,100,20,0.25);
+  --card: rgba(255,255,255,0.9);
+  --radius: 14px;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{font-family:'Tajawal',sans-serif;background:var(--brown-dark);color:var(--text);min-height:100vh;overflow-x:hidden}
+
+/* Background pattern */
+body::after{content:'';position:fixed;inset:0;background:radial-gradient(ellipse at 20% 50%,rgba(201,168,76,0.04) 0%,transparent 60%),radial-gradient(ellipse at 80% 20%,rgba(201,168,76,0.03) 0%,transparent 50%);pointer-events:none;z-index:0}
+
+/* Header */
+header{position:sticky;top:0;z-index:200;background:rgba(245,240,232,0.97);backdrop-filter:blur(20px);border-bottom:1px solid var(--border)}
+.header-top{display:flex;align-items:center;justify-content:space-between;padding:12px 28px;max-width:1500px;margin:0 auto}
+.logo{display:flex;align-items:center;gap:12px}
+.logo-icon{width:42px;height:42px;background:linear-gradient(135deg,var(--gold),var(--gold-light));border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:20px;box-shadow:0 4px 16px rgba(201,168,76,0.35)}
+.logo h1{font-size:17px;font-weight:900;color:var(--gold);letter-spacing:-0.3px}
+.logo p{font-size:10px;color:var(--text-dim);font-weight:400}
+.header-right{display:flex;align-items:center;gap:16px}
+.live-badge{display:flex;align-items:center;gap:6px;font-size:11px;color:var(--green-light);background:rgba(82,183,136,0.1);border:1px solid rgba(82,183,136,0.2);padding:5px 12px;border-radius:20px}
+.live-dot{width:7px;height:7px;background:var(--green-light);border-radius:50%;animation:blink 2s infinite}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:0.3}}
+.month-badge{font-size:12px;color:var(--gold-light);background:rgba(201,168,76,0.1);border:1px solid var(--border);padding:5px 14px;border-radius:20px}
+
+/* Nav */
+.nav{display:flex;padding:0 28px;max-width:1500px;margin:0 auto;gap:2px}
+.tab{padding:10px 18px;font-size:13px;font-weight:700;color:var(--text-dim);background:none;border:none;border-bottom:2px solid transparent;cursor:pointer;font-family:'Tajawal',sans-serif;transition:all 0.2s;white-space:nowrap}
+.tab:hover{color:var(--gold-light)}
+.tab.active{color:var(--gold);border-bottom-color:var(--gold)}
+
+/* Main */
+main{max-width:1500px;margin:0 auto;padding:24px 28px;position:relative;z-index:1}
+.page{display:none}
+.page.active{display:block;animation:fadeUp 0.3s ease}
+@keyframes fadeUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+
+/* Page header */
+.page-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:22px;padding:16px 22px;background:var(--card);border:1px solid var(--border);border-radius:var(--radius);backdrop-filter:blur(10px)}
+.page-title{font-size:17px;font-weight:900;color:var(--gold)}
+.page-sub{font-size:11px;color:var(--text-dim);margin-top:3px}
+
+/* KPIs */
+.kpis{display:grid;grid-template-columns:repeat(5,1fr);gap:14px;margin-bottom:22px}
+.kpi{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:18px;position:relative;overflow:hidden;transition:transform 0.2s}
+.kpi:hover{transform:translateY(-2px)}
+.kpi::before{content:'';position:absolute;top:0;left:0;right:0;height:3px}
+.kpi.gold::before{background:linear-gradient(90deg,var(--gold),var(--gold-light))}
+.kpi.green::before{background:linear-gradient(90deg,#1B4332,var(--green-light))}
+.kpi.red::before{background:linear-gradient(90deg,#7B1D1D,var(--red-light))}
+.kpi.blue::before{background:linear-gradient(90deg,#1a3a5c,var(--blue))}
+.kpi-icon{font-size:26px;margin-bottom:10px}
+.kpi-label{font-size:10px;color:var(--text-dim);font-weight:700;text-transform:uppercase;letter-spacing:0.8px;margin-bottom:5px}
+.kpi-val{font-size:20px;font-weight:900}
+.kpi.gold .kpi-val{color:var(--gold)}
+.kpi.green .kpi-val{color:var(--green-light)}
+.kpi.red .kpi-val{color:var(--red-light)}
+.kpi.blue .kpi-val{color:var(--blue)}
+.kpi-hint{font-size:10px;color:var(--text-dim);margin-top:3px}
+
+/* Grid */
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-bottom:18px}
+.g3{display:grid;grid-template-columns:2fr 1fr;gap:18px;margin-bottom:18px}
+.g32{display:grid;grid-template-columns:1fr 2fr;gap:18px;margin-bottom:18px}
+
+/* Card */
+.card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;backdrop-filter:blur(10px)}
+.card-head{display:flex;align-items:center;justify-content:space-between;padding:14px 18px;border-bottom:1px solid var(--border);background:rgba(201,168,76,0.06)}
+.card-title{font-size:13px;font-weight:800;color:var(--gold);display:flex;align-items:center;gap:7px}
+.card-body{padding:18px}
+
+/* Form */
+.fg{display:grid;gap:14px}
+.fg-2{grid-template-columns:1fr 1fr}
+.fg-3{grid-template-columns:1fr 1fr 1fr}
+.fg-4{grid-template-columns:1fr 1fr 1fr 1fr}
+.field label{display:block;font-size:11px;font-weight:700;color:var(--text-dim);margin-bottom:6px;text-transform:uppercase;letter-spacing:0.5px}
+input,select,textarea{width:100%;background:rgba(0,0,0,0.04);border:1px solid var(--border);border-radius:9px;padding:10px 14px;color:var(--text);font-family:'Tajawal',sans-serif;font-size:13px;outline:none;transition:all 0.2s}
+input:focus,select:focus{border-color:var(--gold);background:rgba(201,168,76,0.07)}
+input[readonly]{opacity:0.6;cursor:not-allowed}
+select option{background:#1E1100;color:var(--text)}
+
+/* Buttons */
+.btn{padding:10px 22px;border-radius:9px;font-family:'Tajawal',sans-serif;font-size:13px;font-weight:800;cursor:pointer;border:none;transition:all 0.2s;display:inline-flex;align-items:center;gap:6px}
+.btn-gold{background:linear-gradient(135deg,var(--gold),var(--gold-light));color:var(--brown-dark);box-shadow:0 4px 14px rgba(201,168,76,0.3)}
+.btn-gold:hover{transform:translateY(-1px);box-shadow:0 6px 20px rgba(201,168,76,0.4)}
+.btn-red{background:rgba(192,57,43,0.15);color:var(--red-light);border:1px solid rgba(192,57,43,0.25)}
+.btn-red:hover{background:rgba(192,57,43,0.25)}
+.btn-sm{padding:5px 12px;font-size:11px}
+.btn-outline{background:transparent;color:var(--gold);border:1px solid var(--border)}
+.btn-outline:hover{background:rgba(201,168,76,0.08)}
+
+/* Table */
+.tbl{width:100%;border-collapse:collapse}
+.tbl th{padding:10px 14px;font-size:10px;font-weight:800;color:var(--gold);text-align:right;border-bottom:1px solid var(--border);background:rgba(201,168,76,0.06);text-transform:uppercase;letter-spacing:0.5px;white-space:nowrap}
+.tbl td{padding:11px 14px;font-size:12px;border-bottom:1px solid rgba(201,168,76,0.06);transition:background 0.15s;white-space:nowrap}
+.tbl tr:hover td{background:rgba(201,168,76,0.06)}
+.tbl tr:last-child td{border-bottom:none}
+.tbl tfoot td{font-weight:900;color:var(--gold);border-top:1px solid var(--border);font-size:13px;padding:12px 14px}
+.empty{text-align:center;color:var(--text-dim);padding:32px!important;font-size:12px}
+
+/* Badges */
+.badge{display:inline-flex;align-items:center;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700}
+.b-gold{background:rgba(201,168,76,0.12);color:var(--gold);border:1px solid rgba(201,168,76,0.25)}
+.b-green{background:rgba(82,183,136,0.12);color:var(--green-light);border:1px solid rgba(82,183,136,0.25)}
+.b-red{background:rgba(231,76,60,0.12);color:var(--red-light);border:1px solid rgba(231,76,60,0.25)}
+.b-blue{background:rgba(41,128,185,0.12);color:var(--blue);border:1px solid rgba(41,128,185,0.25)}
+
+/* Colors */
+.c-gold{color:var(--gold);font-weight:700}
+.c-green{color:var(--green-light);font-weight:700}
+.c-red{color:var(--red-light);font-weight:700}
+.c-dim{color:var(--text-dim)}
+
+/* Meter */
+.meter{margin-bottom:14px}
+.meter-top{display:flex;justify-content:space-between;margin-bottom:5px}
+.meter-label{font-size:12px;color:var(--text-dim);font-weight:600}
+.meter-val{font-size:12px;color:var(--gold);font-weight:800}
+.meter-track{height:5px;background:rgba(255,255,255,0.07);border-radius:3px;overflow:hidden}
+.meter-fill{height:100%;border-radius:3px;transition:width 0.8s ease}
+.mf-gold{background:linear-gradient(90deg,var(--gold),var(--gold-light))}
+.mf-green{background:linear-gradient(90deg,#1B4332,var(--green-light))}
+.mf-red{background:linear-gradient(90deg,#7B1D1D,var(--red-light))}
+
+/* Financial rows */
+.f-row{display:flex;justify-content:space-between;align-items:center;padding:11px 0;border-bottom:1px solid rgba(201,168,76,0.07)}
+.f-row:last-child{border-bottom:none}
+.f-label{font-size:13px;color:var(--text-dim)}
+.f-val{font-size:14px;font-weight:800}
+.f-row.total{background:rgba(201,168,76,0.05);padding:14px 12px;border-radius:8px;margin-top:8px}
+.f-row.total .f-label{color:var(--text);font-weight:800;font-size:14px}
+.f-row.total .f-val{font-size:18px}
+
+/* Alert */
+.alert{padding:12px 16px;border-radius:10px;margin-bottom:10px;font-size:12px;display:flex;align-items:center;gap:8px}
+.a-warn{background:rgba(201,168,76,0.08);border:1px solid rgba(201,168,76,0.2);color:var(--gold-light)}
+.a-ok{background:rgba(82,183,136,0.08);border:1px solid rgba(82,183,136,0.2);color:var(--green-light)}
+.a-err{background:rgba(231,76,60,0.08);border:1px solid rgba(231,76,60,0.2);color:var(--red-light)}
+
+/* Bar chart */
+.chart{display:flex;align-items:flex-end;gap:8px;height:140px;padding:0 4px}
+.bar-w{flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;min-width:0}
+.bar-v{font-size:9px;color:var(--gold);font-weight:800;white-space:nowrap}
+.bar-b{width:100%;border-radius:3px 3px 0 0;transition:height 0.7s ease;min-height:3px}
+.bar-l{font-size:9px;color:var(--text-dim);text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
+
+/* Divider */
+.div{height:1px;background:var(--border);margin:16px 0}
+
+/* Reset confirm */
+.modal{position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:1000;display:none;align-items:center;justify-content:center}
+.modal.open{display:flex}
+.modal-box{background:var(--brown-mid);border:1px solid var(--border);border-radius:16px;padding:28px;max-width:380px;width:90%;text-align:center}
+.modal-title{font-size:18px;font-weight:900;color:var(--red-light);margin-bottom:10px}
+.modal-text{font-size:13px;color:var(--text-dim);margin-bottom:22px;line-height:1.6}
+.modal-btns{display:flex;gap:10px;justify-content:center}
+
+/* Scrollbar */
+::-webkit-scrollbar{width:5px;height:5px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
+
+/* Responsive */
+@media(max-width:1200px){.kpis{grid-template-columns:repeat(3,1fr)}}
+@media(max-width:900px){.kpis{grid-template-columns:repeat(2,1fr)}.g2,.g3,.g32{grid-template-columns:1fr}.fg-3,.fg-4{grid-template-columns:1fr 1fr}}
+@media(max-width:600px){.kpis{grid-template-columns:1fr 1fr}.fg-2{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-top">
+    <div class="logo">
+      <div class="logo-icon">🌾</div>
+      <div>
+        <h1>نظام إدارة الطاحون</h1>
+        <p>Mill Management System — Professional Edition</p>
+      </div>
+    </div>
+    <div class="header-right">
+      <div class="month-badge" id="h-month">—</div>
+      <div class="live-badge"><div class="live-dot"></div>النظام يعمل</div>
+      <button class="btn btn-red btn-sm" onclick="openReset()">🔄 إعادة تعيين الشهر</button>
+    </div>
+  </div>
+  <div class="nav">
+    <button class="tab active" onclick="go('dashboard',this)">📊 لوحة التحكم</button>
+    <button class="tab" onclick="go('sales',this)">📈 المبيعات</button>
+    <button class="tab" onclick="go('inventory',this)">📦 المخزون</button>
+    <button class="tab" onclick="go('expenses',this)">💸 المصاريف</button>
+    <button class="tab" onclick="go('reports',this)">📉 التقارير المالية</button>
+    <button class="tab" onclick="go('debtors',this)">👥 المدينون</button>
+    <button class="tab" onclick="go('creditors',this)">🏪 ديوني</button>
+  </div>
+</header>
+
+<main>
+
+<!-- DASHBOARD -->
+<div class="page active" id="p-dashboard">
+  <div class="page-header">
+    <div><div class="page-title">📊 لوحة التحكم الرئيسية</div><div class="page-sub">ملخص شامل — يتحدث تلقائياً عند كل إدخال</div></div>
+    <span class="badge b-gold" id="db-month-label">—</span>
+  </div>
+  <div class="kpis">
+    <div class="kpi gold"><div class="kpi-icon">💰</div><div class="kpi-label">إجمالي المبيعات</div><div class="kpi-val" id="k-sales">0 ر.ي</div><div class="kpi-hint">هذا الشهر</div></div>
+    <div class="kpi green"><div class="kpi-icon">📈</div><div class="kpi-label">إجمالي الأرباح</div><div class="kpi-val" id="k-profit">0 ر.ي</div><div class="kpi-hint">قبل المصاريف</div></div>
+    <div class="kpi red"><div class="kpi-icon">💸</div><div class="kpi-label">المصاريف</div><div class="kpi-val" id="k-exp">0 ر.ي</div><div class="kpi-hint">هذا الشهر</div></div>
+    <div class="kpi green"><div class="kpi-icon">✅</div><div class="kpi-label">صافي الربح</div><div class="kpi-val" id="k-net">0 ر.ي</div><div class="kpi-hint">بعد المصاريف</div></div>
+    <div class="kpi blue"><div class="kpi-icon">📦</div><div class="kpi-label">مخزون القمح</div><div class="kpi-val" id="k-stock">0 كيس</div><div class="kpi-hint">متبقي حالياً</div></div>
+  </div>
+  <div class="g2">
+    <div class="card">
+      <div class="card-head"><div class="card-title">📦 حالة المخزون</div><span class="badge b-gold">تلقائي</span></div>
+      <div class="card-body">
+        <div class="meter"><div class="meter-top"><span class="meter-label">🌾 قمح بر</span><span class="meter-val" id="m-wheat">0 كيس</span></div><div class="meter-track"><div class="meter-fill mf-gold" id="mb-wheat" style="width:0%"></div></div></div>
+        <div class="meter"><div class="meter-top"><span class="meter-label">🟡 هريش بر</span><span class="meter-val" id="m-hareesh">0 كيلو</span></div><div class="meter-track"><div class="meter-fill mf-green" id="mb-hareesh" style="width:0%"></div></div></div>
+        <div class="meter"><div class="meter-top"><span class="meter-label">⭐ هريش شام</span><span class="meter-val" id="m-sham">0 كيلو</span></div><div class="meter-track"><div class="meter-fill mf-gold" id="mb-sham" style="width:0%"></div></div></div>
+        <div class="div"></div>
+        <div id="db-alerts"></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-head"><div class="card-title">📊 مبيعات حسب الصنف</div></div>
+      <div class="card-body" style="padding:0">
+        <table class="tbl">
+          <thead><tr><th>الصنف</th><th>الكمية</th><th>الإيراد</th><th>الربح</th></tr></thead>
+          <tbody id="db-breakdown"><tr><td class="empty" colspan="4">لا توجد مبيعات بعد</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-head"><div class="card-title">📈 المبيعات اليومية (آخر 10 أيام)</div></div>
+    <div class="card-body"><div class="chart" id="db-chart"><div style="color:var(--text-dim);font-size:12px;width:100%;text-align:center;padding:20px">أدخل مبيعات لتظهر الرسوم البيانية</div></div></div>
+  </div>
+</div>
+
+<!-- SALES -->
+<div class="page" id="p-sales">
+  <div class="page-header">
+    <div><div class="page-title">📈 تسجيل المبيعات</div><div class="page-sub">أدخل عدد الأكياس أو الحبات المباعة</div></div>
+    <span class="badge b-green" id="s-count">0 عملية</span>
+  </div>
+  <div class="card" style="margin-bottom:18px">
+    <div class="card-head"><div class="card-title">➕ إضافة مبيعة جديدة</div></div>
+    <div class="card-body">
+      <div class="fg fg-4" style="margin-bottom:14px">
+        <div class="field"><label>التاريخ</label><input type="date" id="s-date"></div>
+        <div class="field"><label>الصنف</label>
+          <select id="s-type" onchange="onTypeChange()">
+            <option value="">— اختر الصنف —</option>
+            <option value="wheat">🌾 قمح مطحون (كيس كامل)</option>
+            <option value="wheat-half">🌾 قمح مطحون (نص كيس)</option>
+            <option value="hareesh">🟡 هريش بر (حبة 3.5 كيلو)</option>
+            <option value="sham">⭐ هريش شام (حبة 3.5 كيلو)</option>
+            <option value="tahan">⚙️ طحان (خدمة)</option>
+          </select>
+        </div>
+        <div class="field"><label>الكمية</label><input type="number" id="s-qty" placeholder="0" min="0.5" step="0.5" oninput="calcSale()"></div>
+        <div class="field"><label>نوع السعر</label>
+          <select id="s-ptype" onchange="calcSale()">
+            <option value="">— اختر الصنف أولاً —</option>
+          </select>
+        </div>
+      </div>
+      <div class="fg fg-4" style="margin-bottom:14px" id="payment-row">
+        <div class="field"><label>طريقة الدفع</label>
+          <select id="s-pay" onchange="toggleDebtFields()">
+            <option value="cash">💵 كاش</option>
+            <option value="debt">📋 آجل</option>
+          </select>
+        </div>
+        <div class="field" id="debt-paid-field" style="display:none"><label>المبلغ المدفوع الآن (ر.ي)</label><input type="number" id="s-paid" placeholder="0" oninput="calcDebtRemaining()"></div>
+        <div class="field" id="debt-remaining-field" style="display:none"><label>المتبقي (ر.ي)</label><input type="number" id="s-remaining" placeholder="0" readonly style="color:var(--red-light)"></div>
+        <div class="field" id="debt-name-field" style="display:none"><label>اسم العميل</label><input type="text" id="s-cname" placeholder="اسم العميل"></div>
+      </div>
+      <div class="fg fg-2" style="margin-bottom:14px" id="debt-phone-row" style="display:none">
+        <div class="field" id="debt-phone-field" style="display:none"><label>رقم الجوال</label><input type="text" id="s-cphone" placeholder="05xxxxxxxx"></div>
+      </div>
+      <div class="fg fg-3" style="margin-bottom:16px">
+        <div class="field"><label>السعر الفعلي (ر.ي)</label><input type="number" id="s-price" placeholder="0" readonly></div>
+        <div class="field"><label>الكيلو المكافئ</label><input type="text" id="s-kg" placeholder="—" readonly></div>
+        <div class="field"><label>إجمالي البيع (ر.ي)</label><input type="number" id="s-total" placeholder="0" readonly style="color:var(--green-light)"></div>
+      </div>
+      <button class="btn btn-gold" onclick="addSale()">✅ تسجيل المبيعة</button>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-head"><div class="card-title">📋 سجل المبيعات</div></div>
+    <div style="overflow-x:auto">
+      <table class="tbl">
+        <thead><tr><th>#</th><th>التاريخ</th><th>الصنف</th><th>الكمية</th><th>الكيلو</th><th>نوع السعر</th><th>السعر</th><th>الإجمالي</th><th>الربح</th><th>الدفع</th><th></th></tr></thead>
+        <tbody id="s-table"><tr><td class="empty" colspan="10">لا توجد مبيعات</td></tr></tbody>
+        <tfoot><tr><td colspan="7">الإجمالي</td><td id="s-tot-rev">0 ر.ي</td><td id="s-tot-profit" class="c-green">0 ر.ي</td><td></td></tr></tfoot>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- INVENTORY -->
+<div class="page" id="p-inventory">
+  <div class="page-header">
+    <div><div class="page-title">📦 إدارة المخزون</div><div class="page-sub">سجل التوريدات — الرصيد يحتسب تلقائياً</div></div>
+  </div>
+  <div class="g2" style="margin-bottom:18px">
+    <div class="card">
+      <div class="card-head"><div class="card-title">📥 تسجيل توريد جديد</div></div>
+      <div class="card-body">
+        <div class="fg fg-2" style="margin-bottom:14px">
+          <div class="field"><label>التاريخ</label><input type="date" id="i-date"></div>
+          <div class="field"><label>الصنف</label>
+            <select id="i-type" onchange="setInvCost()">
+              <option value="wheat">🌾 قمح بر</option>
+              <option value="sham">⭐ شام</option>
+            </select>
+          </div>
+          <div class="field"><label>عدد الأكياس</label><input type="number" id="i-qty" placeholder="0" min="1" oninput="calcInv()"></div>
+          <div class="field"><label>سعر الكيس (ر.ي)</label><input type="number" id="i-cost" placeholder="11200" oninput="calcInv()"></div>
+        </div>
+        <div class="field" style="margin-bottom:14px"><label>إجمالي التكلفة</label><input type="number" id="i-total" readonly style="color:var(--red-light)"></div>
+        <button class="btn btn-gold" onclick="addInv()">📥 تسجيل التوريد</button>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-head"><div class="card-title">📊 الرصيد الحالي</div><span class="badge b-gold">محدث تلقائياً</span></div>
+      <div class="card-body" style="padding:0">
+        <table class="tbl">
+          <thead><tr><th>الصنف</th><th>الوارد</th><th>المباع</th><th>المتبقي</th><th>بالكيلو</th></tr></thead>
+          <tbody id="i-stock"><tr><td class="empty" colspan="5">لا توجد بيانات</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-head"><div class="card-title">📋 سجل التوريدات</div></div>
+    <div style="overflow-x:auto">
+      <table class="tbl">
+        <thead><tr><th>#</th><th>التاريخ</th><th>الصنف</th><th>الأكياس</th><th>سعر الكيس</th><th>إجمالي التكلفة</th><th></th></tr></thead>
+        <tbody id="i-table"><tr><td class="empty" colspan="7">لا توجد توريدات</td></tr></tbody>
+        <tfoot><tr><td colspan="5">إجمالي تكلفة المشتريات</td><td id="i-tot" class="c-red">0 ر.ي</td><td></td></tr></tfoot>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- EXPENSES -->
+<div class="page" id="p-expenses">
+  <div class="page-header">
+    <div><div class="page-title">💸 المصاريف التشغيلية</div><div class="page-sub">سجل جميع مصاريف الشهر</div></div>
+  </div>
+  <div class="g32">
+    <div class="card">
+      <div class="card-head"><div class="card-title">➕ إضافة مصروف</div></div>
+      <div class="card-body">
+        <div class="fg fg-2" style="margin-bottom:14px">
+          <div class="field"><label>نوع المصروف</label>
+            <select id="e-type">
+              <option value="⛽ ديزل">⛽ ديزل</option>
+              <option value="🏠 إيجار">🏠 إيجار</option>
+              <option value="🔧 صيانة">🔧 صيانة</option>
+              <option value="🛢️ زيت">🛢️ زيت</option>
+              <option value="📦 مصاريف أخرى">📦 مصاريف أخرى</option>
+            </select>
+          </div>
+          <div class="field"><label>المبلغ (ر.ي)</label><input type="number" id="e-amount" placeholder="0" min="0"></div>
+        </div>
+        <div class="field" style="margin-bottom:14px"><label>ملاحظة (اختياري)</label><input type="text" id="e-note" placeholder="مثال: ديزل الأسبوع الأول"></div>
+        <button class="btn btn-gold" onclick="addExp()">✅ تسجيل المصروف</button>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-head"><div class="card-title">📊 ملخص المصاريف</div></div>
+      <div class="card-body">
+        <div id="e-summary"><div class="empty">لا توجد مصاريف</div></div>
+        <div class="div"></div>
+        <div class="f-row total"><span class="f-label">إجمالي المصاريف</span><span class="f-val c-red" id="e-tot-lbl">0 ر.ي</span></div>
+      </div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-head"><div class="card-title">📋 سجل المصاريف</div></div>
+    <div style="overflow-x:auto">
+      <table class="tbl">
+        <thead><tr><th>#</th><th>النوع</th><th>المبلغ</th><th>الملاحظة</th><th></th></tr></thead>
+        <tbody id="e-table"><tr><td class="empty" colspan="5">لا توجد مصاريف</td></tr></tbody>
+        <tfoot><tr><td colspan="2">الإجمالي</td><td id="e-tot" class="c-red">0 ر.ي</td><td colspan="2"></td></tr></tfoot>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- REPORTS -->
+<div class="page" id="p-reports">
+  <div class="page-header">
+    <div><div class="page-title">📉 التقرير المالي الشهري</div><div class="page-sub">يحتسب تلقائياً من جميع البيانات المدخلة</div></div>
+    <button class="btn btn-gold btn-sm" onclick="exportExcel()">📥 تصدير إكسل</button>
+  </div>
+  <div class="g2">
+    <div class="card">
+      <div class="card-head"><div class="card-title">💰 تفصيل الإيرادات</div></div>
+      <div class="card-body">
+        <p style="font-size:10px;color:var(--text-dim);font-weight:800;text-transform:uppercase;letter-spacing:1px;margin-bottom:12px">المبيعات</p>
+        <div class="f-row"><span class="f-label">🌾 قمح مطحون (كيس + نص)</span><span class="f-val c-gold" id="r-wheat-rev">0 ر.ي</span></div>
+        <div class="f-row"><span class="f-label">🟡 هريش بر</span><span class="f-val c-gold" id="r-hareesh-rev">0 ر.ي</span></div>
+        <div class="f-row"><span class="f-label">⭐ هريش شام</span><span class="f-val c-gold" id="r-sham-rev">0 ر.ي</span></div>
+        <div class="f-row"><span class="f-label">⚙️ خدمات الطحان</span><span class="f-val c-gold" id="r-tahan-rev">0 ر.ي</span></div>
+        <div class="f-row total"><span class="f-label">إجمالي الإيرادات</span><span class="f-val c-gold" id="r-tot-rev">0 ر.ي</span></div>
+        <div class="div"></div>
+        <p style="font-size:10px;color:var(--text-dim);font-weight:800;text-transform:uppercase;letter-spacing:1px;margin-bottom:12px">تكلفة المشتريات</p>
+        <div class="f-row"><span class="f-label">🌾 تكلفة قمح بر</span><span class="f-val c-red" id="r-wheat-cost">0 ر.ي</span></div>
+        <div class="f-row"><span class="f-label">⭐ تكلفة الشام</span><span class="f-val c-red" id="r-sham-cost">0 ر.ي</span></div>
+        <div class="f-row total"><span class="f-label">إجمالي التكاليف</span><span class="f-val c-red" id="r-tot-cost">0 ر.ي</span></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-head"><div class="card-title">✅ الربح الصافي</div></div>
+      <div class="card-body">
+        <div class="f-row"><span class="f-label">إجمالي الإيرادات</span><span class="f-val c-gold" id="r2-rev">0 ر.ي</span></div>
+        <div class="f-row"><span class="f-label">إجمالي تكلفة المشتريات</span><span class="f-val c-red" id="r2-cost">0 ر.ي</span></div>
+        <div class="f-row total"><span class="f-label">الربح الإجمالي (قبل المصاريف)</span><span class="f-val c-green" id="r2-gross">0 ر.ي</span></div>
+        <div class="div"></div>
+        <div class="f-row"><span class="f-label">إجمالي المصاريف التشغيلية</span><span class="f-val c-red" id="r2-exp">0 ر.ي</span></div>
+        <div style="background:rgba(82,183,136,0.06);border:1px solid rgba(82,183,136,0.15);border-radius:10px;padding:18px;margin-top:10px">
+          <div style="display:flex;justify-content:space-between;align-items:center">
+            <span style="font-size:15px;font-weight:900;color:var(--green-light)">💵 صافي الربح</span>
+            <span style="font-size:24px;font-weight:900;color:var(--green-light)" id="r2-net">0 ر.ي</span>
+          </div>
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-top:8px">
+            <span style="font-size:12px;color:var(--text-dim)">نسبة الربح الصافية</span>
+            <span style="font-size:15px;font-weight:800;color:var(--green-light)" id="r2-margin">0%</span>
+          </div>
+        </div>
+        <div style="margin-top:14px" id="r-verdict"></div>
+        <div class="div"></div>
+        <p style="font-size:10px;color:var(--text-dim);font-weight:800;text-transform:uppercase;letter-spacing:1px;margin-bottom:12px">ملخص المخزون</p>
+        <div class="f-row"><span class="f-label">🌾 قمح متبقي</span><span class="f-val c-gold" id="r-w-left">0 كيس</span></div>
+        <div class="f-row"><span class="f-label">⭐ شام متبقي</span><span class="f-val c-gold" id="r-s-left">0 كيس</span></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- DEBTORS -->
+<div class="page" id="p-debtors">
+  <div class="page-header">
+    <div><div class="page-title">👥 سجل المدينون</div><div class="page-sub">العملاء الذين لم يدفعوا بعد</div></div>
+    <span class="badge b-red" id="d-count">0 عميل</span>
+  </div>
+  <div class="g2" style="margin-bottom:18px">
+    <div class="card">
+      <div class="card-head"><div class="card-title">➕ إضافة دين يدوي</div></div>
+      <div class="card-body">
+        <div class="fg fg-2" style="margin-bottom:14px">
+          <div class="field"><label>اسم العميل</label><input type="text" id="d-name" placeholder="اسم العميل"></div>
+          <div class="field"><label>رقم الجوال</label><input type="text" id="d-phone" placeholder="05xxxxxxxx"></div>
+          <div class="field"><label>المبلغ (ر.ي)</label><input type="number" id="d-amount" placeholder="0"></div>
+          <div class="field"><label>ملاحظة</label><input type="text" id="d-note" placeholder="مثال: كيس قمح"></div>
+        </div>
+        <button class="btn btn-gold" onclick="addDebtor()">✅ تسجيل الدين</button>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-head"><div class="card-title">📊 ملخص الديون</div></div>
+      <div class="card-body">
+        <div class="f-row"><span class="f-label">عدد المدينين</span><span class="f-val c-red" id="d-total-count">0 عميل</span></div>
+        <div class="f-row"><span class="f-label">إجمالي الديون</span><span class="f-val c-red" id="d-total-amount">0 ر.ي</span></div>
+        <div class="f-row"><span class="f-label">إجمالي المحصل</span><span class="f-val c-green" id="d-total-paid">0 ر.ي</span></div>
+        <div class="f-row total"><span class="f-label">المتبقي</span><span class="f-val c-red" id="d-total-remaining">0 ر.ي</span></div>
+      </div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-head"><div class="card-title">📋 قائمة المدينين</div></div>
+    <div style="overflow-x:auto">
+      <table class="tbl">
+        <thead><tr><th>#</th><th>الاسم</th><th>الجوال</th><th>المبلغ</th><th>المحصل</th><th>المتبقي</th><th>الملاحظة</th><th>الحالة</th><th></th></tr></thead>
+        <tbody id="d-table"><tr><td class="empty" colspan="9">لا يوجد مدينون</td></tr></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- CREDITORS -->
+<div class="page" id="p-creditors">
+  <div class="page-header">
+    <div><div class="page-title">🏪 ديوني للتجار</div><div class="page-sub">مشترياتي الآجلة — ما أنا مدين به</div></div>
+    <span class="badge b-red" id="c-count">0 تاجر</span>
+  </div>
+  <div class="g2" style="margin-bottom:18px">
+    <div class="card">
+      <div class="card-head"><div class="card-title">➕ إضافة دين جديد</div></div>
+      <div class="card-body">
+        <div class="fg fg-2" style="margin-bottom:14px">
+          <div class="field"><label>اسم التاجر</label><input type="text" id="c-name" placeholder="اسم التاجر"></div>
+          <div class="field"><label>رقم الجوال</label><input type="text" id="c-phone" placeholder="05xxxxxxxx"></div>
+          <div class="field"><label>المبلغ (ر.ي)</label><input type="number" id="c-amount" placeholder="0"></div>
+          <div class="field"><label>ملاحظة</label><input type="text" id="c-note" placeholder="مثال: 100 كيس قمح"></div>
+        </div>
+        <button class="btn btn-gold" onclick="addCreditor()">✅ تسجيل الدين</button>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-head"><div class="card-title">📊 ملخص ما أنا مدين به</div></div>
+      <div class="card-body">
+        <div class="f-row"><span class="f-label">عدد التجار</span><span class="f-val c-red" id="c-total-count">0 تاجر</span></div>
+        <div class="f-row"><span class="f-label">إجمالي ما عليّ</span><span class="f-val c-red" id="c-total-amount">0 ر.ي</span></div>
+        <div class="f-row"><span class="f-label">إجمالي ما دفعته</span><span class="f-val c-green" id="c-total-paid">0 ر.ي</span></div>
+        <div class="f-row total"><span class="f-label">المتبقي عليّ</span><span class="f-val c-red" id="c-total-remaining">0 ر.ي</span></div>
+      </div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-head"><div class="card-title">📋 قائمة التجار الدائنين</div></div>
+    <div style="overflow-x:auto">
+      <table class="tbl">
+        <thead><tr><th>#</th><th>التاجر</th><th>الجوال</th><th>المبلغ</th><th>المدفوع</th><th>المتبقي</th><th>الملاحظة</th><th>الحالة</th><th></th></tr></thead>
+        <tbody id="c-table"><tr><td class="empty" colspan="9">لا توجد ديون</td></tr></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+</main>
+
+<!-- Reset Modal -->
+<div class="modal" id="reset-modal">
+  <div class="modal-box">
+    <div class="modal-title">⚠️ إعادة تعيين الشهر</div>
+    <div class="modal-text">سيتم حذف جميع بيانات الشهر الحالي (المبيعات، التوريدات، المصاريف). تأكد من حفظ التقرير قبل المتابعة.</div>
+    <div class="modal-btns">
+      <button class="btn btn-red" onclick="doReset()">✅ نعم، إعادة تعيين</button>
+      <button class="btn btn-outline" onclick="closeReset()">إلغاء</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ========== STATE ==========
+const KEY = 'tahoma_v2';
+let D = load();
+
+function load() {
+  try {
+    const raw = localStorage.getItem(KEY);
+    if (raw) return JSON.parse(raw);
+  } catch(e){}
+  return { sales:[], inventory:[], expenses:[] };
+}
+
+function save() {
+  try { localStorage.setItem(KEY, JSON.stringify(D)); } catch(e){}
+}
+
+// ========== PRICES ==========
+const PRICES = {
+  wheat:       { buy: 11200, options: [['جملة',12300],['عادي',12500],['فردي',13000]], kg: 50 },
+  'wheat-half':{ buy: 5600,  options: [['جملة',6150], ['عادي',6250], ['فردي',6500]],  kg: 25 },
+  hareesh:     { buy: 0,     options: [['ثابت',1000]],                                 kg: 3.5 },
+  sham:        { buy: 843,   options: [['ثابت',1033]],                                 kg: 3.5 },
+  tahan:       { buy: 0,     options: [['500',500],['700',700],['800',800],['900',900],['1000',1000]], kg: 0 }
+};
+
+const NAMES = {
+  wheat:'🌾 قمح (كيس)', 'wheat-half':'🌾 قمح (نص كيس)',
+  hareesh:'🟡 هريش بر', sham:'⭐ هريش شام', tahan:'⚙️ طحان'
+};
+
+// ========== NAVIGATION ==========
+function go(id, el) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('p-'+id).classList.add('active');
+  el.classList.add('active');
+  if (id === 'debtors') renderDebtors();
+  else if (id === 'creditors') renderCreditors();
+  else render();
+}
+
+// ========== HELPERS ==========
+function fmt(n) { return Math.round(n).toLocaleString('ar') + ' ر.ي'; }
+function today() { return new Date().toISOString().split('T')[0]; }
+function monthLabel() {
+  const m = ['يناير','فبراير','مارس','أبريل','مايو','يونيو','يوليو','أغسطس','سبتمبر','أكتوبر','نوفمبر','ديسمبر'];
+  const d = new Date(); return m[d.getMonth()] + ' ' + d.getFullYear();
+}
+
+// ========== SALES ==========
+function onTypeChange() {
+  const t = document.getElementById('s-type').value;
+  const sel = document.getElementById('s-ptype');
+  sel.innerHTML = '';
+  if (!t) { sel.innerHTML = '<option>— اختر الصنف أولاً —</option>'; return; }
+  PRICES[t].options.forEach(([l,v]) => {
+    sel.innerHTML += `<option value="${v}">${l} — ${v.toLocaleString()} ر.ي</option>`;
+  });
+  // For tahan, allow manual price
+  if (t === 'tahan') sel.innerHTML += '<option value="custom">سعر مخصص...</option>';
+  calcSale();
+}
+
+function calcSale() {
+  const t = document.getElementById('s-type').value;
+  const qty = parseFloat(document.getElementById('s-qty').value) || 0;
+  const pval = document.getElementById('s-ptype').value;
+  
+  if (pval === 'custom') {
+    document.getElementById('s-price').readOnly = false;
+    document.getElementById('s-price').placeholder = 'أدخل السعر';
+  } else {
+    const price = parseFloat(pval) || 0;
+    document.getElementById('s-price').value = price || '';
+    document.getElementById('s-price').readOnly = true;
+    document.getElementById('s-total').value = price * qty || '';
+  }
+  
+  if (t && qty) {
+    const kg = (PRICES[t]?.kg || 0) * qty;
+    document.getElementById('s-kg').value = kg ? kg.toFixed(1) + ' كيلو' : '—';
+  }
+  
+  // Recalc if custom
+  const price2 = parseFloat(document.getElementById('s-price').value) || 0;
+  if (pval === 'custom') document.getElementById('s-total').value = price2 * qty || '';
+  // Recalc debt remaining
+  if (document.getElementById('s-pay').value === 'debt') calcDebtRemaining();
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  ['s-date','i-date'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.value = today();
+  });
+  document.getElementById('h-month').textContent = monthLabel();
+  document.getElementById('db-month-label').textContent = monthLabel();
+  setInvCost();
+  render();
+});
+
+function addSale() {
+  const date = document.getElementById('s-date').value;
+  const type = document.getElementById('s-type').value;
+  const qty = parseFloat(document.getElementById('s-qty').value);
+  const price = parseFloat(document.getElementById('s-price').value);
+  const ptypeEl = document.getElementById('s-ptype');
+  const ptypeLabel = ptypeEl.options[ptypeEl.selectedIndex]?.text.split('—')[0].trim() || '';
+
+  if (!date||!type||!qty||!price) { showAlert('يرجى تعبئة جميع الحقول', 'warn'); return; }
+
+  const buy = PRICES[type].buy;
+  const total = price * qty;
+  const profit = total - (buy * qty);
+
+  const payMethod = document.getElementById('s-pay').value;
+  const cname = payMethod === 'debt' ? document.getElementById('s-cname').value : '';
+  const cphone = payMethod === 'debt' ? document.getElementById('s-cphone').value : '';
+  const paidNow = payMethod === 'debt' ? (parseFloat(document.getElementById('s-paid').value) || 0) : total;
+  const debtRemaining = payMethod === 'debt' ? total - paidNow : 0;
+  D.sales.push({ date, type, qty, price, ptypeLabel, total, profit, kg: (PRICES[type].kg||0)*qty, payMethod, cname, cphone, paidNow, debtRemaining });
+  // Auto-add to debtors if debt and there is remaining amount
+  if (payMethod === 'debt' && debtRemaining > 0) {
+    if (!D.debtors) D.debtors = [];
+    const existing = D.debtors.find(d => d.name === cname && d.phone === cphone);
+    if (existing) { existing.amount += debtRemaining; }
+    else { D.debtors.push({ name: cname, phone: cphone, amount: debtRemaining, paid: 0, note: NAMES[type] + ' - دفع ' + paidNow.toLocaleString() + ' مقدماً', date }); }
+  }
+  save(); render();
+  // Reset debt fields
+  if (document.getElementById('s-paid')) document.getElementById('s-paid').value = '';
+  if (document.getElementById('s-remaining')) document.getElementById('s-remaining').value = '';
+  if (document.getElementById('s-cname')) document.getElementById('s-cname').value = '';
+  if (document.getElementById('s-cphone')) document.getElementById('s-cphone').value = '';
+
+  document.getElementById('s-qty').value = '';
+  showAlert('✅ تم تسجيل المبيعة بنجاح', 'ok');
+}
+
+function delSale(i) { D.sales.splice(i,1); save(); render(); }
+
+// ========== INVENTORY ==========
+function setInvCost() {
+  const t = document.getElementById('i-type').value;
+  document.getElementById('i-cost').value = t === 'wheat' ? 11200 : 11800;
+  calcInv();
+}
+
+function calcInv() {
+  const qty = parseFloat(document.getElementById('i-qty').value)||0;
+  const cost = parseFloat(document.getElementById('i-cost').value)||0;
+  document.getElementById('i-total').value = qty*cost || '';
+}
+
+function addInv() {
+  const date = document.getElementById('i-date').value;
+  const type = document.getElementById('i-type').value;
+  const qty = parseFloat(document.getElementById('i-qty').value);
+  const cost = parseFloat(document.getElementById('i-cost').value);
+
+  if (!date||!qty||!cost) { showAlert('يرجى تعبئة جميع الحقول', 'warn'); return; }
+
+  D.inventory.push({ date, type, qty, cost, total: qty*cost });
+  save(); render();
+  document.getElementById('i-qty').value = '';
+  document.getElementById('i-total').value = '';
+  showAlert('✅ تم تسجيل التوريد بنجاح', 'ok');
+}
+
+function delInv(i) { D.inventory.splice(i,1); save(); render(); }
+
+// ========== EXPENSES ==========
+function addExp() {
+  const type = document.getElementById('e-type').value;
+  const amount = parseFloat(document.getElementById('e-amount').value);
+  const note = document.getElementById('e-note').value;
+  if (!amount) { showAlert('يرجى إدخال المبلغ', 'warn'); return; }
+  D.expenses.push({ type, amount, note });
+  save(); render();
+  document.getElementById('e-amount').value = '';
+  document.getElementById('e-note').value = '';
+  showAlert('✅ تم تسجيل المصروف بنجاح', 'ok');
+}
+
+function delExp(i) { D.expenses.splice(i,1); save(); render(); }
+
+// ========== RESET ==========
+function openReset() { document.getElementById('reset-modal').classList.add('open'); }
+function closeReset() { document.getElementById('reset-modal').classList.remove('open'); }
+function doReset() {
+  D = { sales:[], inventory:[], expenses:[], debtors:[], creditors:[] };
+  save(); render(); closeReset();
+  showAlert('✅ تم إعادة تعيين الشهر', 'ok');
+}
+
+// ========== ALERT ==========
+let alertTimer;
+function showAlert(msg, type) {
+  // Simple console — could add toast UI
+  console.log(msg);
+}
+
+// ========== CALCULATIONS ==========
+function calcStocks() {
+  const wheatIn = D.inventory.filter(i=>i.type==='wheat').reduce((a,i)=>a+i.qty,0);
+  const shamIn  = D.inventory.filter(i=>i.type==='sham').reduce((a,i)=>a+i.qty,0);
+  const wheatSold = D.sales.filter(s=>s.type==='wheat').reduce((a,s)=>a+s.qty,0)
+                  + D.sales.filter(s=>s.type==='wheat-half').reduce((a,s)=>a+s.qty*0.5,0)
+                  + D.sales.filter(s=>s.type==='hareesh').reduce((a,s)=>a+s.qty*(3.5/50),0);
+  const shamSold  = D.sales.filter(s=>s.type==='sham').reduce((a,s)=>a+s.qty*(3.5/50),0);
+  return {
+    wheatIn, shamIn,
+    wheatLeft: wheatIn - wheatSold,
+    shamLeft:  shamIn  - shamSold,
+    wheatSold, shamSold
+  };
+}
+
+function calcFinancials() {
+  const totRev    = D.sales.reduce((a,s)=>a+s.total,0);
+  const totProfit = D.sales.reduce((a,s)=>a+s.profit,0);
+  const totCost   = D.inventory.reduce((a,i)=>a+i.total,0);
+  const totExp    = D.expenses.reduce((a,e)=>a+e.amount,0);
+  const netProfit = totProfit - totExp;
+  const margin    = totRev > 0 ? (netProfit/totRev)*100 : 0;
+  const wheatRev  = D.sales.filter(s=>s.type==='wheat'||s.type==='wheat-half').reduce((a,s)=>a+s.total,0);
+  const hareeshRev= D.sales.filter(s=>s.type==='hareesh').reduce((a,s)=>a+s.total,0);
+  const shamRev   = D.sales.filter(s=>s.type==='sham').reduce((a,s)=>a+s.total,0);
+  const tahanRev  = D.sales.filter(s=>s.type==='tahan').reduce((a,s)=>a+s.total,0);
+  const wheatCost = D.inventory.filter(i=>i.type==='wheat').reduce((a,i)=>a+i.total,0);
+  const shamCost  = D.inventory.filter(i=>i.type==='sham').reduce((a,i)=>a+i.total,0);
+  return { totRev, totProfit, totCost, totExp, netProfit, margin,
+           wheatRev, hareeshRev, shamRev, tahanRev, wheatCost, shamCost };
+}
+
+// ========== RENDER ==========
+function render() {
+  const st = calcStocks();
+  const fin = calcFinancials();
+  renderDashboard(st, fin);
+  renderSales();
+  renderInventory(st);
+  renderExpenses();
+  renderReports(st, fin);
+}
+
+function renderDashboard(st, fin) {
+  setText('k-sales', fmt(fin.totRev));
+  setText('k-profit', fmt(fin.totProfit));
+  setText('k-exp', fmt(fin.totExp));
+  setText('k-net', fmt(fin.netProfit));
+  setText('k-stock', st.wheatLeft.toFixed(1) + ' كيس');
+
+  // Meters
+  const maxW = Math.max(st.wheatIn, 1);
+  setText('m-wheat', st.wheatLeft.toFixed(1) + ' كيس');
+  setStyle('mb-wheat', 'width', Math.max(0,(st.wheatLeft/maxW)*100)+'%');
+
+  const hIn = st.wheatIn * 3.5;
+  const hOut = D.sales.filter(s=>s.type==='hareesh').reduce((a,s)=>a+s.qty*3.5,0);
+  setText('m-hareesh', (hIn-hOut).toFixed(1) + ' كيلو');
+  setStyle('mb-hareesh', 'width', hIn>0?Math.max(0,((hIn-hOut)/hIn)*100)+'%':'0%');
+
+  setText('m-sham', (st.shamLeft*50).toFixed(0) + ' كيلو');
+  const maxS = Math.max(st.shamIn,1);
+  setStyle('mb-sham', 'width', Math.max(0,(st.shamLeft/maxS)*100)+'%');
+
+  // Alerts
+  let al = '';
+  if (st.wheatIn === 0) al += '<div class="alert a-warn">⚠️ لم يتم إدخال أي توريد بعد</div>';
+  else if (st.wheatLeft < 10) al += '<div class="alert a-err">🔴 مخزون القمح منخفض جداً! تبقى '+st.wheatLeft.toFixed(1)+' كيس</div>';
+  else al += '<div class="alert a-ok">✅ مخزون القمح جيد — '+st.wheatLeft.toFixed(1)+' كيس متبقي</div>';
+  if (st.shamIn > 0 && st.shamLeft < 5) al += '<div class="alert a-err">🔴 مخزون الشام منخفض!</div>';
+  setHTML('db-alerts', al);
+
+  // Breakdown
+  const byType = {};
+  D.sales.forEach(s => {
+    if (!byType[s.type]) byType[s.type] = {qty:0,rev:0,profit:0};
+    byType[s.type].qty += s.qty;
+    byType[s.type].rev += s.total;
+    byType[s.type].profit += s.profit;
+  });
+  if (!Object.keys(byType).length) {
+    setHTML('db-breakdown','<tr><td class="empty" colspan="4">لا توجد مبيعات بعد</td></tr>');
+  } else {
+    setHTML('db-breakdown', Object.entries(byType).map(([t,d])=>`
+      <tr><td>${NAMES[t]}</td><td><span class="badge b-gold">${d.qty}</span></td>
+      <td class="c-gold">${fmt(d.rev)}</td><td class="c-green">${fmt(d.profit)}</td></tr>
+    `).join(''));
+  }
+
+  // Chart
+  const daily = {};
+  D.sales.forEach(s => { daily[s.date] = (daily[s.date]||0) + s.total; });
+  const days = Object.keys(daily).sort().slice(-10);
+  if (!days.length) {
+    setHTML('db-chart','<div style="color:var(--text-dim);font-size:12px;width:100%;text-align:center;padding:20px">أدخل مبيعات لتظهر الرسوم البيانية</div>');
+  } else {
+    const mx = Math.max(...days.map(d=>daily[d]));
+    setHTML('db-chart', days.map(d=>{
+      const pct = (daily[d]/mx)*100;
+      const label = d.split('-')[2]+'/'+d.split('-')[1];
+      return `<div class="bar-w">
+        <div class="bar-v">${(daily[d]/1000).toFixed(0)}k</div>
+        <div class="bar-b" style="height:${pct}%;background:linear-gradient(180deg,var(--gold),var(--gold-light))"></div>
+        <div class="bar-l">${label}</div>
+      </div>`;
+    }).join(''));
+  }
+}
+
+function renderSales() {
+  setText('s-count', D.sales.length + ' عملية');
+  if (!D.sales.length) {
+    setHTML('s-table','<tr><td class="empty" colspan="10">لا توجد مبيعات مسجلة</td></tr>');
+  } else {
+    setHTML('s-table', [...D.sales].reverse().map((s,ri)=>{
+      const i = D.sales.length-1-ri;
+      return `<tr>
+        <td class="c-dim">${i+1}</td>
+        <td>${s.date}</td>
+        <td>${NAMES[s.type]}</td>
+        <td><span class="badge b-gold">${s.qty}</span></td>
+        <td class="c-dim">${s.kg?s.kg.toFixed(1)+' كيلو':'—'}</td>
+        <td>${s.ptypeLabel}</td>
+        <td>${s.price.toLocaleString()} ر.ي</td>
+        <td class="c-gold">${fmt(s.total)}</td>
+        <td class="c-green">${fmt(s.profit)}</td>
+        <td>${s.payMethod==='debt'?'<span class="badge b-red">📋 آجل</span>':'<span class="badge b-green">💵 كاش</span>'}</td>
+        <td><button class="btn btn-red btn-sm" onclick="delSale(${i})">حذف</button></td>
+      </tr>`;
+    }).join(''));
+  }
+  const totR = D.sales.reduce((a,s)=>a+s.total,0);
+  const totP = D.sales.reduce((a,s)=>a+s.profit,0);
+  setText('s-tot-rev', fmt(totR));
+  setText('s-tot-profit', fmt(totP));
+}
+
+function renderInventory(st) {
+  if (!D.inventory.length) {
+    setHTML('i-table','<tr><td class="empty" colspan="7">لا توجد توريدات</td></tr>');
+  } else {
+    setHTML('i-table', [...D.inventory].reverse().map((inv,ri)=>{
+      const i = D.inventory.length-1-ri;
+      return `<tr>
+        <td class="c-dim">${i+1}</td>
+        <td>${inv.date}</td>
+        <td>${inv.type==='wheat'?'🌾 قمح بر':'⭐ شام'}</td>
+        <td><span class="badge b-gold">${inv.qty} كيس</span></td>
+        <td>${inv.cost.toLocaleString()} ر.ي</td>
+        <td class="c-red">${fmt(inv.total)}</td>
+        <td><button class="btn btn-red btn-sm" onclick="delInv(${i})">حذف</button></td>
+      </tr>`;
+    }).join(''));
+  }
+  setText('i-tot', fmt(D.inventory.reduce((a,i)=>a+i.total,0)));
+
+  // Stock table
+  setHTML('i-stock', `
+    <tr>
+      <td>🌾 قمح بر</td>
+      <td><span class="badge b-gold">${st.wheatIn} كيس</span></td>
+      <td class="c-red">${st.wheatSold.toFixed(2)} كيس</td>
+      <td class="c-gold" style="font-weight:800">${st.wheatLeft.toFixed(2)} كيس</td>
+      <td class="c-dim">${(st.wheatLeft*50).toFixed(0)} كيلو</td>
+    </tr>
+    <tr>
+      <td>⭐ شام</td>
+      <td><span class="badge b-gold">${st.shamIn} كيس</span></td>
+      <td class="c-red">${st.shamSold.toFixed(2)} كيس</td>
+      <td class="c-gold" style="font-weight:800">${st.shamLeft.toFixed(2)} كيس</td>
+      <td class="c-dim">${(st.shamLeft*50).toFixed(0)} كيلو</td>
+    </tr>
+  `);
+}
+
+function renderExpenses() {
+  if (!D.expenses.length) {
+    setHTML('e-table','<tr><td class="empty" colspan="5">لا توجد مصاريف</td></tr>');
+    setHTML('e-summary','<div class="empty">لا توجد مصاريف</div>');
+  } else {
+    setHTML('e-table', [...D.expenses].reverse().map((e,ri)=>{
+      const i = D.expenses.length-1-ri;
+      return `<tr>
+        <td class="c-dim">${i+1}</td>
+        <td>${e.type}</td>
+        <td class="c-red">${fmt(e.amount)}</td>
+        <td class="c-dim">${e.note||'—'}</td>
+        <td><button class="btn btn-red btn-sm" onclick="delExp(${i})">حذف</button></td>
+      </tr>`;
+    }).join(''));
+    // Summary
+    const cats = {};
+    D.expenses.forEach(e=>{ cats[e.type]=(cats[e.type]||0)+e.amount; });
+    setHTML('e-summary', Object.entries(cats).map(([k,v])=>`
+      <div class="f-row"><span class="f-label">${k}</span><span class="f-val c-red">${fmt(v)}</span></div>
+    `).join(''));
+  }
+  const tot = D.expenses.reduce((a,e)=>a+e.amount,0);
+  setText('e-tot', fmt(tot));
+  setText('e-tot-lbl', fmt(tot));
+}
+
+function renderReports(st, fin) {
+  setText('r-wheat-rev', fmt(fin.wheatRev));
+  setText('r-hareesh-rev', fmt(fin.hareeshRev));
+  setText('r-sham-rev', fmt(fin.shamRev));
+  setText('r-tahan-rev', fmt(fin.tahanRev));
+  setText('r-tot-rev', fmt(fin.totRev));
+  setText('r-wheat-cost', fmt(fin.wheatCost));
+  setText('r-sham-cost', fmt(fin.shamCost));
+  setText('r-tot-cost', fmt(fin.totCost));
+  setText('r2-rev', fmt(fin.totRev));
+  setText('r2-cost', fmt(fin.totCost));
+  setText('r2-gross', fmt(fin.totProfit));
+  setText('r2-exp', fmt(fin.totExp));
+  setText('r2-net', fmt(fin.netProfit));
+  setText('r2-margin', fin.margin.toFixed(1)+'%');
+  setText('r-w-left', st.wheatLeft.toFixed(2)+' كيس ('+( st.wheatLeft*50).toFixed(0)+' كيلو)');
+  setText('r-s-left', st.shamLeft.toFixed(2)+' كيس ('+( st.shamLeft*50).toFixed(0)+' كيلو)');
+
+  const verdict = fin.totRev > 0
+    ? (fin.netProfit >= 0
+        ? `<div class="alert a-ok">✅ الشهر رابح — صافي الربح ${fmt(fin.netProfit)}</div>`
+        : `<div class="alert a-err">⚠️ الشهر خاسر — الخسارة ${fmt(Math.abs(fin.netProfit))}</div>`)
+    : '';
+  setHTML('r-verdict', verdict);
+}
+
+// ========== DOM HELPERS ==========
+function setText(id, val) { const el=document.getElementById(id); if(el) el.textContent=val; }
+function setHTML(id, val) { const el=document.getElementById(id); if(el) el.innerHTML=val; }
+function setStyle(id, prop, val) { const el=document.getElementById(id); if(el) el.style[prop]=val; }
+
+function exportExcel() {
+  const month = monthLabel();
+  const st = calcStocks();
+  const fin = calcFinancials();
+
+  // Build CSV content (Excel compatible)
+  const rows = [];
+  const sep = '\t'; // Tab separated for Excel
+
+  // Header
+  rows.push(['نظام إدارة الطاحون - ' + month]);
+  rows.push([]);
+
+  // === SALES ===
+  rows.push(['📈 سجل المبيعات']);
+  rows.push(['#', 'التاريخ', 'الصنف', 'الكمية', 'الكيلو', 'نوع السعر', 'السعر', 'الإجمالي', 'الربح'].join(sep));
+  D.sales.forEach((s, i) => {
+    rows.push([
+      i+1, s.date, NAMES[s.type], s.qty,
+      s.kg ? s.kg.toFixed(1) : 0,
+      s.ptypeLabel, s.price, s.total, s.profit
+    ].join(sep));
+  });
+  rows.push(['', '', '', '', '', '', 'إجمالي المبيعات',
+    D.sales.reduce((a,s)=>a+s.total,0),
+    D.sales.reduce((a,s)=>a+s.profit,0)
+  ].join(sep));
+  rows.push([]);
+
+  // === INVENTORY ===
+  rows.push(['📦 سجل التوريدات']);
+  rows.push(['#', 'التاريخ', 'الصنف', 'الأكياس', 'سعر الكيس', 'إجمالي التكلفة'].join(sep));
+  D.inventory.forEach((inv, i) => {
+    rows.push([i+1, inv.date, inv.type==='wheat'?'قمح بر':'شام', inv.qty, inv.cost, inv.total].join(sep));
+  });
+  rows.push(['', '', '', '', 'إجمالي التكلفة', D.inventory.reduce((a,i)=>a+i.total,0)].join(sep));
+  rows.push([]);
+
+  // === EXPENSES ===
+  rows.push(['💸 سجل المصاريف']);
+  rows.push(['#', 'النوع', 'المبلغ', 'الملاحظة'].join(sep));
+  D.expenses.forEach((e, i) => {
+    rows.push([i+1, e.type, e.amount, e.note||''].join(sep));
+  });
+  rows.push(['', 'إجمالي المصاريف', D.expenses.reduce((a,e)=>a+e.amount,0), ''].join(sep));
+  rows.push([]);
+
+  // === FINANCIAL SUMMARY ===
+  rows.push(['📉 التقرير المالي - ' + month]);
+  rows.push(['البند', 'القيمة (ر.ي)'].join(sep));
+  rows.push(['إجمالي الإيرادات', fin.totRev].join(sep));
+  rows.push(['إجمالي تكلفة المشتريات', fin.totCost].join(sep));
+  rows.push(['الربح الإجمالي', fin.totProfit].join(sep));
+  rows.push(['إجمالي المصاريف', fin.totExp].join(sep));
+  rows.push(['صافي الربح', fin.netProfit].join(sep));
+  rows.push(['نسبة الربح', fin.margin.toFixed(1)+'%'].join(sep));
+  rows.push([]);
+
+  // === STOCK ===
+  rows.push(['📦 المخزون المتبقي']);
+  rows.push(['الصنف', 'الوارد', 'المباع', 'المتبقي (كيس)', 'المتبقي (كيلو)'].join(sep));
+  rows.push(['قمح بر', st.wheatIn, st.wheatSold.toFixed(2), st.wheatLeft.toFixed(2), (st.wheatLeft*50).toFixed(0)].join(sep));
+  rows.push(['شام', st.shamIn, st.shamSold.toFixed(2), st.shamLeft.toFixed(2), (st.shamLeft*50).toFixed(0)].join(sep));
+
+  // Create and download file
+  const BOM = '\uFEFF'; // UTF-8 BOM for Arabic support in Excel
+  const content = BOM + rows.join('\n');
+  const blob = new Blob([content], { type: 'text/tab-separated-values;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'تقرير_الطاحون_' + month.replace(' ','_') + '.xls';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
+// ========== PAYMENT TOGGLE ==========
+function toggleDebtFields() {
+  const pay = document.getElementById('s-pay').value;
+  const isDebt = pay === 'debt';
+  document.getElementById('debt-paid-field').style.display = isDebt ? '' : 'none';
+  document.getElementById('debt-remaining-field').style.display = isDebt ? '' : 'none';
+  document.getElementById('debt-name-field').style.display = isDebt ? '' : 'none';
+  document.getElementById('debt-phone-field').style.display = isDebt ? '' : 'none';
+  if (isDebt) calcDebtRemaining();
+}
+
+function calcDebtRemaining() {
+  const total = parseFloat(document.getElementById('s-total').value) || 0;
+  const paid = parseFloat(document.getElementById('s-paid').value) || 0;
+  const remaining = total - paid;
+  document.getElementById('s-remaining').value = remaining >= 0 ? remaining : 0;
+}
+
+// ========== DEBTORS ==========
+function addDebtor() {
+  const name = document.getElementById('d-name').value;
+  const phone = document.getElementById('d-phone').value;
+  const amount = parseFloat(document.getElementById('d-amount').value);
+  const note = document.getElementById('d-note').value;
+  if (!name || !amount) { alert('يرجى إدخال الاسم والمبلغ'); return; }
+  if (!D.debtors) D.debtors = [];
+  D.debtors.push({ name, phone, amount, paid: 0, note, date: today() });
+  save(); renderDebtors();
+  document.getElementById('d-name').value = '';
+  document.getElementById('d-phone').value = '';
+  document.getElementById('d-amount').value = '';
+  document.getElementById('d-note').value = '';
+}
+
+function payDebtor(i, amount) {
+  const paid = parseFloat(prompt('كم تم تحصيله من ' + D.debtors[i].name + '؟')) || 0;
+  if (paid > 0) {
+    D.debtors[i].paid = (D.debtors[i].paid || 0) + paid;
+    if (D.debtors[i].paid >= D.debtors[i].amount) D.debtors[i].paid = D.debtors[i].amount;
+    save(); renderDebtors();
+  }
+}
+
+function delDebtor(i) { if(confirm('حذف هذا المدين؟')) { D.debtors.splice(i,1); save(); renderDebtors(); } }
+
+function renderDebtors() {
+  if (!D.debtors) D.debtors = [];
+  const active = D.debtors.filter(d => (d.paid||0) < d.amount);
+  setText('d-count', D.debtors.length + ' عميل');
+  const totAmt = D.debtors.reduce((a,d)=>a+d.amount,0);
+  const totPaid = D.debtors.reduce((a,d)=>a+(d.paid||0),0);
+  setText('d-total-count', D.debtors.length + ' عميل');
+  setText('d-total-amount', fmt(totAmt));
+  setText('d-total-paid', fmt(totPaid));
+  setText('d-total-remaining', fmt(totAmt - totPaid));
+  if (!D.debtors.length) {
+    setHTML('d-table','<tr><td class="empty" colspan="9">لا يوجد مدينون</td></tr>');
+    return;
+  }
+  setHTML('d-table', D.debtors.map((d,i) => {
+    const remaining = d.amount - (d.paid||0);
+    const isPaid = remaining <= 0;
+    return `<tr>
+      <td class="c-dim">${i+1}</td>
+      <td style="font-weight:700">${d.name}</td>
+      <td><a href="tel:${d.phone}" style="color:var(--blue)">${d.phone||'—'}</a></td>
+      <td class="c-gold">${fmt(d.amount)}</td>
+      <td class="c-green">${fmt(d.paid||0)}</td>
+      <td class="${isPaid?'c-green':'c-red'}" style="font-weight:800">${fmt(remaining)}</td>
+      <td class="c-dim">${d.note||'—'}</td>
+      <td>${isPaid ? '<span class="badge b-green">✅ مسدد</span>' : '<span class="badge b-red">⏳ معلق</span>'}</td>
+      <td style="display:flex;gap:4px">
+        ${!isPaid ? `<button class="btn btn-gold btn-sm" onclick="payDebtor(${i})">💵 تسديد</button>` : ''}
+        <button class="btn btn-red btn-sm" onclick="delDebtor(${i})">حذف</button>
+      </td>
+    </tr>`;
+  }).join(''));
+}
+
+// ========== CREDITORS ==========
+function addCreditor() {
+  const name = document.getElementById('c-name').value;
+  const phone = document.getElementById('c-phone').value;
+  const amount = parseFloat(document.getElementById('c-amount').value);
+  const note = document.getElementById('c-note').value;
+  if (!name || !amount) { alert('يرجى إدخال الاسم والمبلغ'); return; }
+  if (!D.creditors) D.creditors = [];
+  D.creditors.push({ name, phone, amount, paid: 0, note, date: today() });
+  save(); renderCreditors();
+  document.getElementById('c-name').value = '';
+  document.getElementById('c-phone').value = '';
+  document.getElementById('c-amount').value = '';
+  document.getElementById('c-note').value = '';
+}
+
+function payCreditor(i) {
+  const paid = parseFloat(prompt('كم دفعت للتاجر ' + D.creditors[i].name + '؟')) || 0;
+  if (paid > 0) {
+    D.creditors[i].paid = (D.creditors[i].paid || 0) + paid;
+    if (D.creditors[i].paid >= D.creditors[i].amount) D.creditors[i].paid = D.creditors[i].amount;
+    save(); renderCreditors();
+  }
+}
+
+function delCreditor(i) { if(confirm('حذف هذا الدين؟')) { D.creditors.splice(i,1); save(); renderCreditors(); } }
+
+function renderCreditors() {
+  if (!D.creditors) D.creditors = [];
+  setText('c-count', D.creditors.length + ' تاجر');
+  const totAmt = D.creditors.reduce((a,d)=>a+d.amount,0);
+  const totPaid = D.creditors.reduce((a,d)=>a+(d.paid||0),0);
+  setText('c-total-count', D.creditors.length + ' تاجر');
+  setText('c-total-amount', fmt(totAmt));
+  setText('c-total-paid', fmt(totPaid));
+  setText('c-total-remaining', fmt(totAmt - totPaid));
+  if (!D.creditors.length) {
+    setHTML('c-table','<tr><td class="empty" colspan="9">لا توجد ديون</td></tr>');
+    return;
+  }
+  setHTML('c-table', D.creditors.map((d,i) => {
+    const remaining = d.amount - (d.paid||0);
+    const isPaid = remaining <= 0;
+    return `<tr>
+      <td class="c-dim">${i+1}</td>
+      <td style="font-weight:700">${d.name}</td>
+      <td><a href="tel:${d.phone}" style="color:var(--blue)">${d.phone||'—'}</a></td>
+      <td class="c-red">${fmt(d.amount)}</td>
+      <td class="c-green">${fmt(d.paid||0)}</td>
+      <td class="${isPaid?'c-green':'c-red'}" style="font-weight:800">${fmt(remaining)}</td>
+      <td class="c-dim">${d.note||'—'}</td>
+      <td>${isPaid ? '<span class="badge b-green">✅ مسدد</span>' : '<span class="badge b-red">⏳ معلق</span>'}</td>
+      <td style="display:flex;gap:4px">
+        ${!isPaid ? `<button class="btn btn-gold btn-sm" onclick="payCreditor(${i})">💵 دفع</button>` : ''}
+        <button class="btn btn-red btn-sm" onclick="delCreditor(${i})">حذف</button>
+      </td>
+    </tr>`;
+  }).join(''));
+}
+
+</script>
+</body>
+</html>
